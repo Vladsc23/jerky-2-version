@@ -1,7 +1,9 @@
 # Savana Jerky – jednostránkový web (verze 2)
 
-Verze 2: tmavý „filmový“ vzhled – zarámovaný hero s interaktivními WebGL dunami (`assets/js/dunes.js`),
-skleněné menu, dvoubarevné nadpisy a plovoucí tlačítko. Úpravy vzhledu jsou v `assets/css/v2.css`.
+Verze 2 „Studio“ (inspirace šablonou Brewns z getlayers.ai, vlastní provedení): světlé produktové studio
+s interaktivním 3D sáčkem (`assets/js/pouch3d.js`, three.js), karty naklánějící se k myši, text rozsvěcovaný
+scrollováním, 24hodinový ciferník výroby a účtenka s výživovými hodnotami z tiskárny.
+Styly: `assets/css/site.css`, interakce: `assets/js/site.js`, etikety pro 3D: `assets/tex/`.
 
 Živě: https://vladsc23.github.io/jerky-2-version/
 
