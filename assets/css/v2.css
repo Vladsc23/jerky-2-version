@@ -1,0 +1,178 @@
+/* ==========================================================================
+   Savana Jerky – verze 2: tmavý „filmový“ vzhled
+   Zarámovaný hero s WebGL dunami, skleněné menu, dvoubarevné nadpisy.
+   Načítá se až po style.css a přepisuje jeho tokeny a vybrané komponenty.
+   ========================================================================== */
+:root {
+  --paper: #0b0908;
+  --cream: #100c0a;
+  --cream-2: #261d18;
+  --ink: #f1e8dc;
+  --ink-soft: #a5968a;
+  --espresso: #0b0908;
+  --espresso-2: #14100d;
+  --espresso-3: #1d1612;
+  --on-dark: #f1e8dc;
+  --on-dark-soft: #a5968a;
+  --glass: rgb(255 255 255 / .035);
+  --glass-2: rgb(255 255 255 / .06);
+  --line: rgb(255 255 255 / .08);
+  --line-2: rgb(255 255 255 / .14);
+  --mute: rgb(241 232 220 / .42);
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-brand: "Playfair Display", Georgia, serif;
+  color-scheme: dark;
+}
+
+body { background: var(--paper); color: var(--ink); }
+body::after { /* jemné filmové zrno přes celou stránku */
+  content: ""; position: fixed; inset: 0; z-index: 70; pointer-events: none; opacity: .055; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- typografie ---------- */
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; letter-spacing: -.035em; color: var(--ink); text-wrap: balance; }
+h2 { font-size: clamp(2.1rem, 4.6vw, 3.6rem); line-height: 1.04; }
+h3 { font-weight: 600; letter-spacing: -.02em; }
+.mute { color: var(--mute); }
+.section-dark h2, .section-dark h3 { color: var(--ink); }
+.section-lead, .section-dark .section-lead, .section-dark p { color: var(--ink-soft); }
+
+.eyebrow {
+  gap: .55em; padding: .42em 1em; border-radius: 999px; border: 1px solid var(--line-2); background: var(--glass);
+  color: var(--ink-soft); font-size: .82rem; font-weight: 600; letter-spacing: 0; text-transform: none;
+  backdrop-filter: blur(8px);
+}
+.eyebrow::before { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+.section-dark .eyebrow, .hero .eyebrow, .contact .eyebrow { color: var(--ink-soft); }
+.badge-pill::before { display: none; }
+.badge-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pulse 2.4s ease-in-out infinite; }
+
+/* ---------- hlavička: skleněná pilulka ---------- */
+.site-header, .site-header.is-scrolled { background: none; box-shadow: none; backdrop-filter: none; --header-h: 84px; }
+.header-inner { width: min(1320px, 100% - 2 * var(--gutter)); }
+.brand-text { font-family: var(--font-brand); }
+.brand-text span { color: var(--ink); }
+.site-nav ul {
+  padding: 5px; gap: 2px; border-radius: 999px; border: 1px solid var(--line);
+  background: rgb(18 14 12 / .55); backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 10px 30px -12px rgb(0 0 0 / .6);
+}
+.site-nav ul a { padding: 8px 16px; border-radius: 999px; font-weight: 500; opacity: .75; transition: background-color .3s, opacity .3s, color .3s; }
+.site-nav ul a::after { display: none; }
+.site-nav ul a:hover { opacity: 1; color: var(--ink); background: var(--glass-2); }
+.site-nav ul a.is-active { opacity: 1; color: var(--ink); background: rgb(255 255 255 / .1); }
+@media (max-width: 960px) {
+  .site-nav ul { padding: 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; }
+  .site-nav ul a { font-family: var(--font-display); font-weight: 500; letter-spacing: -.03em; }
+}
+
+/* ---------- tlačítka ---------- */
+.btn { font-weight: 600; }
+.btn-ghost { background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--line-2); color: var(--ink); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1px rgb(226 174 78 / .6); color: var(--gold-2); }
+.btn-dark { background: var(--glass-2); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
+.btn-dark:hover { background: var(--gold); color: #120d0a; }
+
+/* ---------- hero v rámu s WebGL dunami ---------- */
+.hero-framed {
+  margin: 12px; min-height: calc(100svh - 24px); border-radius: 28px; overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--line), 0 40px 120px -40px rgb(0 0 0 / .8);
+  background: radial-gradient(120% 90% at 70% 100%, #6b3410, #2a140a 45%, #0b0908 80%);
+}
+.hero-framed .hero-bg { border-radius: inherit; }
+.dunes { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 1.6s var(--ease); }
+.dunes.is-ready { opacity: 1; }
+.hero-grain {
+  position: absolute; inset: 0; opacity: .22; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.hero-framed::before {
+  background:
+    linear-gradient(90deg, rgb(11 9 8 / .82) 0%, rgb(11 9 8 / .55) 38%, rgb(11 9 8 / 0) 70%),
+    linear-gradient(0deg, rgb(11 9 8 / .55) 0%, transparent 35%);
+}
+.hero-title { font-weight: 500; letter-spacing: -.045em; line-height: 1; color: var(--ink); }
+.hero-title em { font-family: var(--font-brand); font-weight: 700; letter-spacing: -.02em; }
+.hero-title .mute { display: block; }
+.hero-lead { color: rgb(241 232 220 / .7); }
+.hero-facts li { border-left-color: var(--line-2); }
+.hero-facts strong { font-family: var(--font-display); font-weight: 600; letter-spacing: -.03em; color: var(--ink); }
+.hero-glow { background: radial-gradient(closest-side, rgb(255 170 80 / .35), rgb(226 120 40 / .1) 60%, transparent); }
+.scroll-cue { box-shadow: inset 0 0 0 1.5px var(--line-2); }
+
+/* ---------- pás výhod ---------- */
+.marquee {
+  margin: 28px 0 0; transform: none; padding: 18px 0; background: none; color: var(--ink-soft);
+  border-block: 1px solid var(--line); box-shadow: none;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+.marquee li { font-family: var(--font-display); font-weight: 500; font-size: 1rem; letter-spacing: -.01em; }
+.marquee li::after { content: "✦"; color: var(--gold); opacity: .9; }
+
+/* ---------- sekce bez vln, jen jemné oddělení ---------- */
+.divider { display: none; }
+.section-light, .section-dark { background: var(--paper); }
+.section-cream { background: var(--cream); }
+.section { border-top: 1px solid rgb(255 255 255 / .04); }
+
+/* ---------- skleněné karty ---------- */
+.product, .shops li, .ostrich-stats > div, .table-wrap, .faq details, .feature, .audience-list li, .stats li, .contact-form {
+  background: linear-gradient(180deg, rgb(255 255 255 / .045), rgb(255 255 255 / .015));
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.product:hover, .shops li:hover, .audience-list li:hover {
+  box-shadow: inset 0 0 0 1px rgb(226 174 78 / .45), 0 30px 60px -30px rgb(226 140 50 / .35);
+}
+.product-media {
+  background: radial-gradient(70% 60% at 50% 45%, color-mix(in srgb, var(--accent) 38%, transparent), transparent 72%), rgb(255 255 255 / .02);
+}
+.product-media img { filter: drop-shadow(0 22px 22px rgb(0 0 0 / .55)); }
+.product h3 { font-size: 1.5rem; }
+.product-foot { border-top-color: var(--line); }
+.heat i { background: rgb(255 255 255 / .1); }
+.badge { background: rgb(11 9 8 / .7); backdrop-filter: blur(8px); box-shadow: inset 0 0 0 1px var(--line-2); }
+.filter { background: var(--glass); box-shadow: inset 0 0 0 1px var(--line); }
+.filter-btn { color: var(--ink-soft); }
+.filter-btn.is-active { color: #120d0a; }
+.filter-pill { background: var(--ink); }
+
+.feature-ico { background: var(--glass-2); color: var(--gold); box-shadow: inset 0 0 0 1px var(--line-2); }
+.shops li > svg, .faq summary svg { background: var(--glass-2); }
+.faq details[open] { box-shadow: inset 0 0 0 1px rgb(226 174 78 / .45); }
+.faq summary { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; }
+.pill { color: #120d0a; }
+
+.ostrich-photo, .process-photo, .mosaic img { box-shadow: inset 0 0 0 1px var(--line), 0 40px 80px -40px rgb(0 0 0 / .9); }
+.ostrich-stats dt, .stats strong { font-family: var(--font-display); font-weight: 600; letter-spacing: -.04em; color: var(--gold-2); }
+.stats li { color: var(--ink-soft); }
+.step-n { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line-2); color: var(--gold-2); font-family: var(--font-display); font-weight: 600; }
+.steps::after { background: var(--line); }
+
+.bar { background: var(--glass-2); color: var(--ink); }
+.bar:not(.bar-gold):not(.bar-red)::before { background: rgb(255 255 255 / .16); }
+.nutri-table caption { font-family: var(--font-display); font-weight: 600; }
+.nutri-table th, .nutri-table td { border-bottom-color: var(--line); }
+.nutri-table .hl { background: rgb(226 174 78 / .1); }
+
+.band::before { background: radial-gradient(80% 90% at 50% 50%, rgb(11 9 8 / .5), rgb(11 9 8 / .92)); }
+.band-big { font-family: var(--font-display); font-weight: 500; letter-spacing: -.05em; }
+
+.site-footer { background: #070605; border-top: 1px solid var(--line); }
+
+/* ---------- plovoucí tlačítko dole uprostřed ---------- */
+.float-cta {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 45;
+  display: inline-flex; align-items: center; gap: .55em; padding: .8em 1.4em; border-radius: 999px;
+  background: rgb(22 17 14 / .72); backdrop-filter: blur(16px) saturate(1.4); color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line-2), 0 16px 40px -14px rgb(0 0 0 / .8);
+  font-weight: 600; font-size: .95rem; text-decoration: none;
+  opacity: 0; translate: -50% 24px; pointer-events: none;
+  transition: opacity .5s var(--ease), translate .6s var(--ease-spring), box-shadow .3s;
+}
+.float-cta .ico { color: var(--gold); fill: currentColor; stroke: none; }
+.float-cta.is-visible { opacity: 1; translate: -50% 0; pointer-events: auto; }
+.float-cta:hover { box-shadow: inset 0 0 0 1px rgb(226 174 78 / .6), 0 16px 40px -14px rgb(226 140 50 / .5); }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (max-width: 600px) { .hero-framed { margin: 8px; border-radius: 22px; } }

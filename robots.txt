@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+
+Sitemap: https://vladsc23.github.io/jerky-2-version/sitemap.xml
